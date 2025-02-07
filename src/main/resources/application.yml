@@ -1,10 +1,14 @@
 spring:
-  data:
-    mongodb:
-      authentication-database: admin
-      auto-index-creation: true
-      host: localhost
-      port: 27017
-      database: shorturldb
-      username: docker
-      password: docker
+  datasource:
+    url: jdbc:postgresql://localhost:5432/shorten-url
+    driverClassName: org.postgresql.Driver
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+  jpa:
+  hibernate:
+    ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  cache:
+    caffeine:
+      spec: "maximumSize=1000,expireAfterWrite=5m"
+    type: caffeine

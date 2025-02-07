@@ -1,20 +1,33 @@
 package com.abreu.shorturl.services;
 
-import com.abreu.shorturl.models.Url;
-import com.abreu.shorturl.models.dto.UrlRequestDTO;
-import com.abreu.shorturl.models.dto.UrlResponseDTO;
+import com.abreu.shorturl.exceptions.ShortCodeGenerationException;
+import com.abreu.shorturl.exceptions.UrlExpiredException;
+import com.abreu.shorturl.exceptions.UrlNotFoundException;
+import com.abreu.shorturl.models.UrlEntity;
 import com.abreu.shorturl.repositories.UrlRepository;
-import jakarta.servlet.http.HttpServletRequest;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.http.HttpHeaders;
+import com.abreu.shorturl.utils.ShortCodeGenerator;
+import jakarta.transaction.Transactional;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 @Service
+@CacheConfig(cacheNames = "urls")
 public class UrlService {
+
+    private static final int MAX_RETRIES = 3;
+    private static final int SHORT_CODE_LENGTH = 8;
+    private static final List<String> BLACKLISTED_DOMAINS = List.of(
+            "malicious.com", "spam.net"
+    );
 
     private final UrlRepository urlRepository;
 
@@ -23,30 +36,78 @@ public class UrlService {
     }
 
     @Transactional
-    public UrlResponseDTO shortUrl(UrlRequestDTO request, HttpServletRequest servletRequest) {
+    public UrlEntity shortenUrl(String originalUrl, int minutes) {
+        validateUrl(originalUrl);
 
-        String id;
+        String shortCode = generateUniqueShortCode();
 
-        do {
-            id = RandomStringUtils.randomAlphanumeric(5, 10);
-        } while (urlRepository.existsById(id));
+        LocalDateTime createdAt = LocalDateTime.now();
+        LocalDateTime expiresAt = createdAt.plusMinutes(minutes);
 
-        urlRepository.save(new Url(id, request.url(), LocalDateTime.now().plusMinutes(5)));
+        UrlEntity urlEntity = new UrlEntity();
+        urlEntity.setOriginalUrl(originalUrl);
+        urlEntity.setShortCode(shortCode);
+        urlEntity.setCreatedAt(createdAt);
+        urlEntity.setExpiresAt(expiresAt);
 
-        var redirectUrl = servletRequest.getRequestURL().toString().replace("shorturl", id);
-
-        return new UrlResponseDTO(redirectUrl);
+        return urlRepository.save(urlEntity);
     }
 
 
-    @Transactional(readOnly = true)
-    public HttpHeaders redirect(String id) {
+    @Transactional
+    @Cacheable(key = "#shortCode")
+    public String getOriginalUrl(String shortCode) {
+        Optional<UrlEntity> optionalUrl = urlRepository.findByShortCode(shortCode);
+        if (optionalUrl.isEmpty()) {
+            throw new UrlNotFoundException("Short code não encontrado: " + shortCode);
+        }
 
-        var url = urlRepository.findById(id).orElseThrow(RuntimeException::new);
+        UrlEntity urlEntity = optionalUrl.get();
+        if (LocalDateTime.now().isAfter(urlEntity.getExpiresAt())) {
+            urlRepository.delete(urlEntity);
+            throw new UrlExpiredException("URL expirada: " + shortCode);
+        }
 
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setLocation(URI.create(url.getUrl()));
+        return urlEntity.getOriginalUrl();
+    }
 
-        return httpHeaders;
+    private String generateUniqueShortCode() {
+        int attempts = 0;
+        String shortCode;
+
+        do {
+            shortCode = ShortCodeGenerator.generate(SHORT_CODE_LENGTH);
+            attempts++;
+        } while (urlRepository.existsByShortCode(shortCode) && attempts < MAX_RETRIES);
+
+        if (attempts >= MAX_RETRIES) {
+            throw new ShortCodeGenerationException("Falha ao gerar código único");
+        }
+
+        return shortCode;
+    }
+
+    @CacheEvict(key = "#shortCode")
+    @Transactional
+    public void deleteExpiredUrl(String shortCode) {
+        urlRepository.deleteByShortCode(shortCode);
+    }
+
+    private void validateUrl(String url) {
+        try {
+            URI uri = new URI(url);
+            if (!uri.isAbsolute()) {
+                throw new IllegalArgumentException("URL deve ser absoluta (incluir protocolo)");
+            }
+            if (uri.getHost() == null) {
+                throw new IllegalArgumentException("Domínio inválido");
+            }
+            String domain = uri.getHost().toLowerCase();
+            if (BLACKLISTED_DOMAINS.contains(domain)) {
+                throw new IllegalArgumentException("Domínio bloqueado: " + domain);
+            }
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException("URL inválida: " + ex.getMessage());
+        }
     }
 }
