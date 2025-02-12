@@ -6,12 +6,8 @@ import com.abreu.shorturl.exceptions.UrlNotFoundException;
 import com.abreu.shorturl.models.UrlEntity;
 import com.abreu.shorturl.repositories.UrlRepository;
 import com.abreu.shorturl.utils.ShortCodeGenerator;
-import jakarta.transaction.Transactional;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -20,7 +16,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@CacheConfig(cacheNames = "urls")
 public class UrlService {
 
     private static final int MAX_RETRIES = 3;
@@ -55,7 +50,6 @@ public class UrlService {
 
 
     @Transactional
-    @Cacheable(key = "#shortCode")
     public String getOriginalUrl(String shortCode) {
         Optional<UrlEntity> optionalUrl = urlRepository.findByShortCode(shortCode);
         if (optionalUrl.isEmpty()) {
@@ -87,7 +81,6 @@ public class UrlService {
         return shortCode;
     }
 
-    @CacheEvict(key = "#shortCode")
     @Transactional
     public void deleteExpiredUrl(String shortCode) {
         urlRepository.deleteByShortCode(shortCode);
