@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Entity
 @Table(name = "tb_urls")
@@ -30,6 +31,14 @@ public class UrlEntity {
     private LocalDateTime expiresAt;
     @Column(nullable = false)
     private LocalDateTime createdAt;
+
+    @Transient
+    public int getMinutes() {
+        if (createdAt == null || expiresAt == null) {
+            return 0;
+        }
+        return (int) ChronoUnit.MINUTES.between(createdAt, expiresAt);
+    }
 
     public UrlEntity(String originalUrl, String shortCode, LocalDateTime expiresAt, LocalDateTime createdAt) {
         this.originalUrl = originalUrl;
