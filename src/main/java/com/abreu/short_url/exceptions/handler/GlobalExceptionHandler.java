@@ -1,8 +1,8 @@
 package com.abreu.short_url.exceptions.handler;
 
-import com.abreu.shorturl.exceptions.ErrorMessage;
-import com.abreu.shorturl.exceptions.UrlExpiredException;
-import com.abreu.shorturl.exceptions.UrlNotFoundException;
+import com.abreu.short_url.exceptions.ErrorMessage;
+import com.abreu.short_url.exceptions.UrlExpiredException;
+import com.abreu.short_url.exceptions.UrlNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

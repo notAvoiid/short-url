@@ -1,7 +1,7 @@
 package com.abreu.short_url.utils;
 
-import com.abreu.shorturl.exceptions.ShortCodeGenerationException;
-import com.abreu.shorturl.repository.UrlRepository;
+import com.abreu.short_url.exceptions.ShortCodeGenerationException;
+import com.abreu.short_url.repository.UrlRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;

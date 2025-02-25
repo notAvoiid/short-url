@@ -1,7 +1,6 @@
 package com.abreu.short_url.repository;
 
 import com.abreu.short_url.models.UrlEntity;
-import com.abreu.shorturl.models.UrlEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
