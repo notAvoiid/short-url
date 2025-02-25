@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    driverClassName: org.postgresql.Driver
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      jdbc:
+        time_zone: America/Sao_Paulo
+
+app:
+  short-code:
+    length: 8
+    max-retries: 3
+  blacklisted-domains: malicious.com,spam.net
