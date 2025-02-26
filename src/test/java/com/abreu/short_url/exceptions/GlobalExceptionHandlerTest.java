@@ -11,6 +11,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+
+import java.io.IOException;
 
 import static com.abreu.short_url.utils.Constants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,9 +29,13 @@ public class GlobalExceptionHandlerTest {
     @Mock
     private MockHttpServletRequest request;
 
+    @Mock
+    private MockHttpServletResponse mockResponse;
+
     @BeforeEach
     void setUp() {
         request = new MockHttpServletRequest();
+        mockResponse = new MockHttpServletResponse();
     }
 
     @Nested
@@ -119,10 +126,11 @@ public class GlobalExceptionHandlerTest {
 
         @Test
         @DisplayName("Handle URL expired exception with full error response")
-        void handleUrlExpiredExceptionReturnsFullErrorResponse() {
+        void handleUrlExpiredExceptionReturnsFullErrorResponse() throws IOException {
             var response = exceptionHandler.handleUrlExpiredException(
                     new UrlExpiredException(URL_EXPIRED),
-                    request
+                    request,
+                    mockResponse
             );
 
             assertNotNull(response);
@@ -143,10 +151,11 @@ public class GlobalExceptionHandlerTest {
 
         @Test
         @DisplayName("Handle URL expired exception with null request")
-        void handleUrlExpiredExceptionWithNullRequest() {
+        void handleUrlExpiredExceptionWithNullRequest() throws IOException {
             var response = exceptionHandler.handleUrlExpiredException(
                     new UrlExpiredException(URL_EXPIRED),
-                    null
+                    null,
+                    mockResponse
             );
 
             assertNotNull(response);
