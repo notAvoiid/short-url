@@ -27,6 +27,14 @@ public class UrlController {
     private final UrlService urlService;
 
     @GetMapping
+    @Operation(
+            summary = "Retrieve all shortened URLs",
+            description = "Fetches a list of all shortened URLs stored in the database"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "List retrieved successfully"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<List<UrlResponseDTO>> findAll() {
         return ResponseEntity.ok(urlService.findAll());
     }
@@ -38,7 +46,8 @@ public class UrlController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Short URL created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request")
+            @ApiResponse(responseCode = "400", description = "Invalid request"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<UrlResponseDTO> shortenUrl(@Valid @RequestBody UrlRequestDTO request) {
 
@@ -53,11 +62,15 @@ public class UrlController {
     }
 
     @GetMapping("/{shortCode}")
-    @Operation(summary = "Redirect to original URL")
+    @Operation(
+            summary = "Redirect to the original URL",
+            description = "Redirects the user to the original URL associated with the given short code"
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "302", description = "Redirecionamento bem-sucedido"),
-            @ApiResponse(responseCode = "404", description = "Short code não existe"),
-            @ApiResponse(responseCode = "410", description = "URL expirada")
+            @ApiResponse(responseCode = "302", description = "Successful redirection"),
+            @ApiResponse(responseCode = "404", description = "Short code does not exist"),
+            @ApiResponse(responseCode = "410", description = "URL expired"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Void> redirectToOriginalUrl(@PathVariable String shortCode) {
         String originalUrl = urlService.getOriginalUrl(shortCode);
@@ -69,8 +82,17 @@ public class UrlController {
     }
 
     @DeleteMapping("/cleanup")
+    @Operation(
+            summary = "Remove expired URLs",
+            description = "Deletes all expired shortened URLs from the database"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Expired URLs removed successfully"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<Void> removeExpiredUrls() {
         urlService.removeExpiredUrls();
         return ResponseEntity.noContent().build();
     }
+
 }

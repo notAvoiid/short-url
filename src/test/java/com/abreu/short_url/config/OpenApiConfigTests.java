@@ -24,7 +24,7 @@ class OpenApiConfigTests {
 
     @Test
     void shouldLoadOpenAPIConfiguration() {
-        assertNotNull(openAPI, "OpenAPI bean deve ser carregado");
+        assertNotNull(openAPI, "OpenAPI bean must be loaded");
     }
 
     @Test
