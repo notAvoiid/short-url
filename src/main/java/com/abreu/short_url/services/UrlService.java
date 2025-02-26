@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -52,21 +51,16 @@ public class UrlService {
 
     @Transactional
     public String getOriginalUrl(String shortCode) {
-        Optional<UrlEntity> optionalUrl = urlRepository.findByShortCode(shortCode);
+        UrlEntity url = urlRepository.findByShortCode(shortCode).orElseThrow(
+                () -> new UrlNotFoundException("Short code not found: " + shortCode)
+        );
 
-        if (optionalUrl.isEmpty()) {
-            throw new UrlNotFoundException("Short code not found: " + shortCode);
-        }
-
-        UrlEntity urlEntity = optionalUrl.get();
-        if (LocalDateTime.now().isAfter(urlEntity.getExpiresAt())) {
-            urlRepository.delete(urlEntity);
+        if (url.isExpired()) {
             throw new UrlExpiredException("URL expired: " + shortCode);
         }
 
-        log.info("Redirecting to: {}", urlEntity.getOriginalUrl());
-
-        return urlEntity.getOriginalUrl();
+        log.info("Redirecting to: {}", url.getOriginalUrl());
+        return url.getOriginalUrl();
     }
 
     @Scheduled(cron = "0 0 * * * ?")

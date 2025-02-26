@@ -40,6 +40,10 @@ public class UrlEntity {
         return (int) ChronoUnit.MINUTES.between(createdAt, expiresAt);
     }
 
+    public boolean isExpired() {
+        return LocalDateTime.now().isAfter(getExpiresAt());
+    }
+
     public UrlEntity(String originalUrl, String shortCode, LocalDateTime expiresAt, LocalDateTime createdAt) {
         this.originalUrl = originalUrl;
         this.shortCode = shortCode;
