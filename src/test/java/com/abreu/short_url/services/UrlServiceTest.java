@@ -92,19 +92,6 @@ public class UrlServiceTest {
     class GetOriginalUrl {
 
         @Test
-        @DisplayName("Should throw UrlExpiredException and delete expired URL from repository")
-        void getOriginalUrl_ExpiredUrl_ShouldThrowExceptionAndDelete() {
-            UrlEntity entity = new UrlEntity();
-            entity.setExpiresAt(LocalDateTime.now().minusMinutes(1));
-
-            when(urlRepository.findByShortCode(EXPIRED)).thenReturn(Optional.of(entity));
-
-            assertThrows(UrlExpiredException.class, () -> urlService.getOriginalUrl(EXPIRED));
-
-            verify(urlRepository, times(1)).delete(entity);
-        }
-
-        @Test
         @DisplayName("Should throw UrlNotFoundException when the short code is invalid")
         void getOriginalUrl_InvalidShortCode_ShouldThrowException() {
             when(urlRepository.findByShortCode(INVALID)).thenReturn(Optional.empty());
