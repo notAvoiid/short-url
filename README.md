@@ -10,19 +10,19 @@
 
 ![spring][SPRING_BADGE]
 ![java][JAVA_BADGE]
+![docker][DOCKER_BADGE]
 ![junit][JUNIT_BADGE]
 ![mockito][MOCKITO_BADGE]
-![docker][DOCKER_BADGE]
 
 <br>
 
 <p align="center">
-  <b>Projeto para a encurtamento de URLs.</b>
+  <b>Projeto para o encurtamento de URLs.</b>
 </p>
 
 ## 🚀 Começando
 
-Este projeto é uma API de encurtamento de URL desenvolvida com Spring Boot, JPA, Lombok, Validation e PostgreSQL.  As URLs que são armazenadas são verificadas pelas validações e tem um tempo de expiração definido pelo usuario.
+Este projeto é uma API de encurtamento de URL desenvolvida com Spring Boot, JPA, Lombok, Validation e PostgreSQL. As URLs que são armazenadas são verificadas pelas validações e tem um tempo de expiração definido pelo usuario.
 
 ## ⚙️ Tecnologias
 
