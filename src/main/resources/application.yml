@@ -11,6 +11,8 @@ spring:
     properties:
       jdbc:
         time_zone: America/Sao_Paulo
+server:
+  port: ${PORT:8080}
 
 app:
   short-code:
