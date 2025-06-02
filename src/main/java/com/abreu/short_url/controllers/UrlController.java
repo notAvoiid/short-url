@@ -26,11 +26,6 @@ public class UrlController {
 
     private final UrlService urlService;
 
-    @GetMapping("/")
-    public String home() {
-        return "Hello, World!";
-    }
-
     @GetMapping
     @Operation(
             summary = "Retrieve all shortened URLs",
